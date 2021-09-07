@@ -50,7 +50,7 @@ package main
 
 import (
   "io/ioutil"
-  "github.com/thedatashed/xlsxreader"
+  "github.com/esourceful/xlsxreader"
 )
 
 func main() {

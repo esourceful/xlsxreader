@@ -14,8 +14,8 @@ type workbook struct {
 
 // sheet is a struct representing the sheet xml element.
 type sheet struct {
-	Name           string `xml:"name,attr,omitempty"`
-	RelationshipID string `xml:"http://schemas.openxmlformats.org/officeDocument/2006/relationships id,attr,omitempty"`
+	Name           string `xml:"name,attr"`
+	RelationshipID string `xml:"http://schemas.openxmlformats.org/officeDocument/2006/relationships id,attr"`
 }
 
 // relationships is a struct representing the data we care about from the _rels/workboox.xml.rels file.
@@ -24,8 +24,8 @@ type relationships struct {
 }
 
 type relationship struct {
-	ID     string `xml:"Id,attr,omitempty"`
-	Target string `xml:"Target,attr,omitempty"`
+	ID     string `xml:"Id,attr"`
+	Target string `xml:"Target,attr"`
 }
 
 func getFileNameFromRelationships(rels []relationship, s sheet) (string, error) {

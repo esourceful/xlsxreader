@@ -10,14 +10,14 @@ import (
 
 // styleSheet defines a struct containing the information we care about from the styles.xml file.
 type styleSheet struct {
-	NumberFormats []numberFormat `xml:"numFmts>numFmt,omitempty"`
-	CellStyles    []cellStyle    `xml:"cellXfs>xf,omitempty"`
+	NumberFormats []numberFormat `xml:"numFmts>numFmt"`
+	CellStyles    []cellStyle    `xml:"cellXfs>xf"`
 }
 
 // numberFormat defines a struct containing the format strings for numerical styles.
 type numberFormat struct {
-	NumberFormatID int    `xml:"numFmtId,attr,omitempty"`
-	FormatCode     string `xml:"formatCode,attr,omitempty"`
+	NumberFormatID int    `xml:"numFmtId,attr"`
+	FormatCode     string `xml:"formatCode,attr"`
 }
 
 // cellStyle defines a struct containing style information for a cell.

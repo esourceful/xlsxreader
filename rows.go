@@ -9,7 +9,7 @@ import (
 
 // rawRow represent the raw XML element for parsing a row of data.
 type rawRow struct {
-	Index    int       `xml:"r,attr,omitempty"`
+	Index    int       `xml:"r,attr"`
 	RawCells []rawCell `xml:"c"`
 }
 
@@ -61,8 +61,8 @@ func (rr *rawRow) unmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 // rawCell represents the raw XML element for parsing a cell.
 type rawCell struct {
 	Reference    string  `xml:"r,attr"` // E.g. A1
-	Type         string  `xml:"t,attr,omitempty"`
-	Value        *string `xml:"v,omitempty"`
+	Type         string  `xml:"t,attr"`
+	Value        *string `xml:"v"`
 	Style        int     `xml:"s,attr"`
 	InlineString *string `xml:"is>t"`
 }

@@ -3,11 +3,13 @@ package main
 import (
 	"fmt"
 
-	"github.com/thedatashed/xlsxreader"
+	"github.com/esourceful/xlsxreader"
 )
 
 func main() {
-	e, err := xlsxreader.OpenFile("./test-small.xlsx")
+	filepath := "./sample_parse_failure.xlsx"
+	//filepath := "./test-small.xlsx"
+	e, err := xlsxreader.OpenFile(filepath)
 	if err != nil {
 		fmt.Printf("error: %s \n", err)
 		return
