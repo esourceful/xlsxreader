@@ -330,7 +330,10 @@ func (x *XlsxFile) parseRawCells(rawCells []rawCell, index int) ([]Cell, error) 
 	for _, rawCell := range rawCells {
 		if rawCell.Value == nil && rawCell.InlineString == nil {
 			// This cell is empty, so ignore it
-			continue
+			rawCell.Type = "inlineStr"
+			rawCell.Value = new(string)
+			rawCell.InlineString = new(string)
+			//continue
 		}
 		column := strings.Map(removeNonAlpha, rawCell.Reference)
 		val, err := x.getCellValue(rawCell)
