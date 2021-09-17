@@ -228,6 +228,7 @@ func (x *XlsxFile) getCellValue(r rawCell) (string, error) {
 		if err != nil {
 			return "", err
 		}
+			return "", nil //just return an empty string
 		return formattedDate, nil
 	}
 
