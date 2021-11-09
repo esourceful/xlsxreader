@@ -223,12 +223,11 @@ func (x *XlsxFile) getCellValue(r rawCell) (string, error) {
 		return x.sharedStrings[index], nil
 	}
 
-	if x.dateStyles[r.Style] && r.Type != "d" {
+	if (x.dateStyles[r.Style] || r.Style == 33 || r.Style == 34) && r.Type != "d" {
 		formattedDate, err := convertExcelDateToDateString(*r.Value)
 		if err != nil {
 			return "", err
 		}
-			return "", nil //just return an empty string
 		return formattedDate, nil
 	}
 

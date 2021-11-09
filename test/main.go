@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"flag"
 	"fmt"
 	"time"
 
@@ -15,6 +16,12 @@ import (
 
 	"runtime"
 )
+
+var verbose bool = false
+
+func setVerbose(on bool) {
+	verbose = on
+}
 
 func dbSql(dsn string, query string) {
 	db, err := sql.Open("mysql", "root:pass@tcp(127.0.0.1:3306)/belfserv_B")
@@ -46,27 +53,62 @@ func dbSql(dsn string, query string) {
 
 func main() {
 	start := time.Now()
-	fmt.Println("starting test/main.go")
+	//fmt.Println("starting test/main.go")
 	path, err := os.Getwd()
 	if err != nil {
 		log.Println(err)
 	}
 	//get default filepath values
-	fmt.Println(path)
-	//filepath := "/Users/johndavis/go/src/r/xlsxreader/test/sample_parse_failure.xlsx"
-	filepath := path + "/test/backlog.xlsx"
-	//outfilepath := "/Users/johndavis/websites/GoWork/xlsxreader/sample.csv"
-	outfilepath := path + "/test/sample_outfile.csv"
+	//fmt.Println(path)
+	filepath := "/Users/johndavis/websites/GoWork/xlsxreader/test/sample_parse_failure2.xlsx"
+	//filepath := "/test/backlog.xlsx"
+	outfilepath := "/Users/johndavis/websites/GoWork/xlsxreader/test/sample32.csv"
+	//outfilepath := "/test/sample_outfile.csv"
+
+	xlsxfilepath := flag.String("in", filepath, "xlsx file to be parsed")
+	csvfilepath := flag.String("out", outfilepath, "csv file to hold all values")
+	verboseOutput := flag.Bool("v", false, "should output be verbose?")
+	relativePath := flag.Bool("rel", false, "should path be relative to execute path?")
+
+	flag.Parse()
+
+	if *verboseOutput {
+		fmt.Println("setting verbose output")
+		setVerbose(true)
+	}
+
+	if *relativePath {
+		newxlpath := path + *xlsxfilepath
+		newcvspath := path + *csvfilepath
+		xlsxfilepath = &newxlpath
+		csvfilepath = &newcvspath
+	}
+
+	if verbose {
+		fmt.Println("xlsxfilepath = ", *xlsxfilepath)
+		fmt.Println("csvfilepath = ", *csvfilepath)
+	}
 
 	//filepath := "./test-small.xlsx"
-	e, err := xlsxreader.OpenFile(filepath)
+	fi, err := os.Stat(*xlsxfilepath)
 	if err != nil {
-		fmt.Printf("error: %s \n", err)
+		fmt.Println("error checking filesize:", err)
+		return
+	}
+	// get the size
+	size := fi.Size()
+	if verbose {
+		fmt.Println("opening input file", *xlsxfilepath, "( ", size, "bytes )")
+	}
+
+	e, err := xlsxreader.OpenFile(*xlsxfilepath)
+	if err != nil {
+		fmt.Printf("error opening file: %s \n", err)
 		return
 	}
 	defer e.Close()
 
-	csvfile, err := os.Create(outfilepath)
+	csvfile, err := os.Create(*csvfilepath)
 
 	if err != nil {
 		log.Fatalf("failed creating csv file: %s", err)
@@ -77,13 +119,18 @@ func main() {
 
 	//todo: defer csvwriter close?
 
-	fmt.Printf("Worksheets: %s \n", e.Sheets)
-
+	if verbose {
+		fmt.Printf("Worksheets: %s \n", e.Sheets)
+	}
 	rowcount := 0
 	cellcount := 0
 	columncount := 0
 	brokencount := 0
 	csvcount := 0
+	dotcount := 0
+	dotmax := 20 //show a max of 20 progress dots
+
+	fmt.Print("\033[s")
 
 	for row := range e.ReadRows(e.Sheets[0]) {
 		//fmt.Println("reading row")
@@ -97,6 +144,19 @@ func main() {
 			}*/
 		rowcount++
 
+		if verbose {
+			if (rowcount % 100) == 0 { //print a dot every 100 records
+				if dotcount > 1 && (dotcount%dotmax) == 0 {
+					fmt.Print("\033[u\033[K") // restore the cursor position and clear the line
+					fmt.Print(".")
+					dotcount = 1
+				} else {
+					fmt.Print(".")
+					dotcount++
+				}
+			}
+		}
+
 		record := make([]string, 0, len(row.Cells))
 
 		for _, cell := range row.Cells {
@@ -104,7 +164,9 @@ func main() {
 			record = append(record, cell.Value)
 			if rowcount == 1 {
 				columncount++
-				fmt.Println("found cell header value:", cell.Value)
+				if verbose {
+					fmt.Println("found cell header value:", cell.Value)
+				}
 			}
 		}
 		if len(record) != columncount {
@@ -121,15 +183,22 @@ func main() {
 			csvcount++
 		}
 	}
-	fmt.Println("there were", brokencount, "broken records found out of", rowcount, "records !")
-	fmt.Println("we wrote", csvcount, "csv records to", outfilepath)
-
 	csvwriter.Flush()
 
 	csvfile.Close()
-	duration := time.Since(start)
-	fmt.Println("duration:", duration)
-	PrintMemUsage()
+	if verbose {
+		fmt.Println("there were", brokencount, "broken records found out of", rowcount, "records !")
+		fmt.Println("we wrote", csvcount, "csv records to", *csvfilepath)
+		duration := time.Since(start)
+		fmt.Println("duration:", duration)
+		PrintMemUsage()
+	}
+
+	if brokencount == 0 && csvcount == rowcount {
+		fmt.Println("SUCCESS")
+	} else {
+		fmt.Println("FAILURE")
+	}
 
 }
 
@@ -183,7 +252,9 @@ func main2() {
 			record = append(record, cell.Value)
 			if rowcount == 1 {
 				columncount++
-				fmt.Println("found cell header value:", cell.Value)
+				if verbose {
+					fmt.Println("found cell header value:", cell.Value)
+				}
 			}
 		}
 		if len(record) != columncount {
